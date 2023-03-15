@@ -1,16 +1,6 @@
-use clap::{Parser, Subcommand};
-
-/// Simple program to greet a person
-#[derive(Parser)]
-struct Cli {
-    #[command(subcommand)]
-    command: Option<Commands>,
-}
-
-#[derive(Subcommand)]
-enum Commands {
-    Init {},
-}
+use clap::Parser;
+mod cli;
+use cli::{Commands, Cli};
 
 fn main() {
     let cli = Cli::parse();
