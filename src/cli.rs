@@ -8,5 +8,7 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
-    Init {},
+    Init {
+        name: Option<String>
+    },
 }
