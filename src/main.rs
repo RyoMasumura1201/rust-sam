@@ -1,6 +1,7 @@
 use clap::Parser;
 mod cli;
 use cli::{Commands, Cli};
+mod init;
 
 fn main() {
     let cli = Cli::parse();
@@ -9,8 +10,14 @@ fn main() {
         Some(Commands::Init { name }) => {
             println!("'myapp init' was used");
             match name {
-                Some(name) => println!("name is {}", name),
-                None => println!("name is not given"),
+                Some(name) => {
+                    println!("name is {}", name)
+                },
+                None => { 
+                    println!("name is not given");
+                    init::clone();
+                    
+                },
             }
         }
         None => {}
