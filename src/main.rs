@@ -15,8 +15,7 @@ fn main() {
                 },
                 None => { 
                     println!("name is not given");
-                    init::clone();
-                    
+                    init::init();
                 },
             }
         }

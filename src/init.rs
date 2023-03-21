@@ -1,7 +1,20 @@
 use std::process::Command;
 use std::path::PathBuf;
+use std::io;
 
-pub fn clone() {
+pub fn init() {
+    match clone() {
+        Ok(repo_dir_str) => {
+            println!("{}", repo_dir_str);
+            generate_files();
+        }
+        Err(e)=> {
+            eprintln!("{}", e);
+        }
+    }
+}
+
+fn clone() -> Result<String, io::Error> {
     const SAM_TEMPLATE_URL: &str = "https://github.com/aws/aws-sam-cli-app-templates.git";
 
     const REPOSITORY_DIR: &str = ".aws-sam-cli-app-templates";
@@ -15,6 +28,11 @@ pub fn clone() {
 
     Command::new("git")
         .args(["clone", SAM_TEMPLATE_URL, repo_dir_str])
-        .output()
-        .expect("failed to clone repository");
+        .output()?;
+
+    Ok(repo_dir_str.to_string())
+}
+
+fn generate_files() {
+    println!("generate");
 }
