@@ -9,7 +9,7 @@ pub fn init() {
             generate_files();
         }
         Err(e)=> {
-            eprintln!("{}", e);
+            eprintln!("git clone failed with error:{}", e);
         }
     }
 }
