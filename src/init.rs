@@ -2,6 +2,8 @@ use std::process::Command;
 use std::path::PathBuf;
 use std::io;
 
+const CONFIG_DIR: &str = ".aws-sam";
+
 pub fn init() {
     match clone() {
         Ok(repo_dir_str) => {
@@ -17,7 +19,7 @@ pub fn init() {
 fn clone() -> Result<String, io::Error> {
     const SAM_TEMPLATE_URL: &str = "https://github.com/aws/aws-sam-cli-app-templates.git";
 
-    const REPOSITORY_DIR: &str = ".aws-sam-cli-app-templates";
+    const REPOSITORY_DIR: &str = "aws-sam-cli-app-templates";
 
     let clone_to_dir = PathBuf::from(".");
 
@@ -31,6 +33,10 @@ fn clone() -> Result<String, io::Error> {
         .output()?;
 
     Ok(repo_dir_str.to_string())
+}
+
+fn find_template() {
+    
 }
 
 fn generate_files() {
