@@ -1,9 +1,7 @@
-use std::env::temp_dir;
 use std::process::Command;
-use std::path::PathBuf;
 use std::io;
 use tempfile::tempdir;
-use dirs;
+use dirs::home_dir;
 
 
 const CONFIG_DIR: &str = ".aws-rsam";
@@ -25,7 +23,7 @@ fn clone() -> Result<String, io::Error> {
 
     const REPOSITORY_DIR: &str = "aws-sam-cli-app-templates";
 
-    let home_dir = dirs::home_dir().expect("failed to read home directory");
+    let home_dir = home_dir().expect("failed to read home directory");
 
     let config_dir = home_dir.join(CONFIG_DIR);
 
