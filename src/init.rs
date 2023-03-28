@@ -1,7 +1,9 @@
-use std::process::Command;
+use std::{process::Command, path::PathBuf};
 use std::io;
+use fs_extra::error;
 use tempfile::tempdir;
 use dirs::home_dir;
+use fs_extra::dir::{copy, CopyOptions};
 
 
 const CONFIG_DIR: &str = ".aws-rsam";
@@ -37,19 +39,23 @@ fn clone() -> Result<String, io::Error> {
 
     let temp_path_str = temp_path.as_path().to_str().expect("Failed to convert PathBuf to str");
 
-    let dest_path = config_dir.join(REPOSITORY_DIR);
-
     println!("Cloning from https://github.com/aws/aws-sam-cli-app-templates (process may take a moment)");
 
     Command::new("git")
         .args(["clone", SAM_TEMPLATE_URL, temp_path_str])
         .output()?;
 
+
     Ok(temp_path_str.to_string())
 }
 
-fn find_template() {
-    
+fn persist_local_repo(temp_path: &str, dest_dir: PathBuf, dest_name: &str) -> Result<PathBuf, error::Error>{
+    let dest_path = dest_dir.join(dest_name);
+    let options = CopyOptions::new();
+
+    copy(temp_path, &dest_path, &options)?;
+
+    Ok(dest_path)
 }
 
 fn generate_files() {
