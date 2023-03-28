@@ -1,6 +1,5 @@
-use std::{process::Command, path::PathBuf};
-use std::io;
-use fs_extra::error;
+use std::{process::Command, path::PathBuf, io};
+use fs_extra::error as fs_extra_error;
 use tempfile::tempdir;
 use dirs::home_dir;
 use fs_extra::dir::{copy, CopyOptions};
@@ -10,17 +9,23 @@ const CONFIG_DIR: &str = ".aws-rsam";
 
 pub fn init() {
     match clone() {
-        Ok(repo_dir_str) => {
-            println!("{}", repo_dir_str);
+        Ok(repo_dir) => {
+            println!("{:?}", repo_dir);
             generate_files();
         }
         Err(e)=> {
-            eprintln!("git clone failed with error:{}", e);
+            eprintln!("git clone failed with error:{:?}", e);
         }
     }
 }
 
-fn clone() -> Result<String, io::Error> {
+#[derive(Debug)]
+enum CloneError {
+    IoError(io::Error),
+    FsError(fs_extra_error::Error)
+}
+
+fn clone() -> Result<PathBuf, CloneError> {
     const SAM_TEMPLATE_URL: &str = "https://github.com/aws/aws-sam-cli-app-templates.git";
 
     const REPOSITORY_DIR: &str = "aws-sam-cli-app-templates";
@@ -31,7 +36,7 @@ fn clone() -> Result<String, io::Error> {
 
     println!("{:?}", config_dir);
 
-    let temp_dir = tempdir()?;
+    let temp_dir = tempdir().map_err(CloneError::IoError)?;
 
     let temp_path = temp_dir.path().join(REPOSITORY_DIR);
 
@@ -41,19 +46,27 @@ fn clone() -> Result<String, io::Error> {
 
     println!("Cloning from https://github.com/aws/aws-sam-cli-app-templates (process may take a moment)");
 
-    Command::new("git")
+    match Command::new("git")
         .args(["clone", SAM_TEMPLATE_URL, temp_path_str])
-        .output()?;
+        .output() {
+            Ok(_)=>(),
+            Err(e)=> return Err(CloneError::IoError(e))
+        }
+        
 
+    let dest_path = match persist_local_repo(temp_path_str, config_dir, REPOSITORY_DIR) {
+        Ok(path)=>Ok(path),
+        Err(e)=> Err(CloneError::FsError(e)),
+    };
 
-    Ok(temp_path_str.to_string())
+    dest_path
 }
 
-fn persist_local_repo(temp_path: &str, dest_dir: PathBuf, dest_name: &str) -> Result<PathBuf, error::Error>{
+fn persist_local_repo(temp_path: &str, dest_dir: PathBuf, dest_name: &str) -> Result<PathBuf, fs_extra_error::Error>{
     let dest_path = dest_dir.join(dest_name);
     let options = CopyOptions::new();
 
-    copy(temp_path, &dest_path, &options)?;
+    copy(temp_path, &dest_dir, &options)?;
 
     Ok(dest_path)
 }
