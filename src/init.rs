@@ -4,8 +4,7 @@ use tempfile::tempdir;
 use dirs::home_dir;
 use fs_extra::dir::{copy, CopyOptions};
 
-
-const CONFIG_DIR: &str = ".aws-rsam";
+use crate::constants::{SAM_TEMPLATE_URL, REPOSITORY_DIR, CONFIG_DIR};
 
 pub fn init() {
     match clone() {
@@ -26,10 +25,6 @@ enum CloneError {
 }
 
 fn clone() -> Result<PathBuf, CloneError> {
-    const SAM_TEMPLATE_URL: &str = "https://github.com/aws/aws-sam-cli-app-templates.git";
-
-    const REPOSITORY_DIR: &str = "aws-sam-cli-app-templates";
-
     let home_dir = home_dir().expect("failed to read home directory");
 
     let config_dir = home_dir.join(CONFIG_DIR);
