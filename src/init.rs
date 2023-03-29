@@ -44,7 +44,7 @@ fn clone() -> Result<PathBuf, CloneError> {
 
     let temp_path_str = temp_path.as_path().to_str().expect("Failed to convert PathBuf to str");
 
-    println!("Cloning from https://github.com/aws/aws-sam-cli-app-templates (process may take a moment)");
+    println!("Cloning from {} (process may take a moment)", SAM_TEMPLATE_URL);
 
     match Command::new("git")
         .args(["clone", SAM_TEMPLATE_URL, temp_path_str])
