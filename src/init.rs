@@ -54,12 +54,10 @@ fn clone() -> Result<PathBuf, CloneError> {
         }
         
 
-    let dest_path = match persist_local_repo(temp_path_str, config_dir, REPOSITORY_DIR) {
-        Ok(path)=>Ok(path),
-        Err(e)=> Err(CloneError::FsError(e)),
-    };
-
-    dest_path
+    match persist_local_repo(temp_path_str, config_dir, REPOSITORY_DIR) {
+        Ok(path) => Ok(path),
+        Err(e) => Err(CloneError::FsError(e)),
+    }
 }
 
 fn persist_local_repo(temp_path: &str, dest_dir: PathBuf, dest_name: &str) -> Result<PathBuf, fs_extra_error::Error>{
