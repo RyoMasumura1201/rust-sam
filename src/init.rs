@@ -7,7 +7,7 @@ use fs_extra::dir::{copy, CopyOptions};
 use crate::constants::{SAM_TEMPLATE_URL, REPOSITORY_DIR, CONFIG_DIR};
 
 pub fn init() {
-    match clone() {
+    match clone_templates_repo() {
         Ok(repo_dir) => {
             println!("{:?}", repo_dir);
             generate_files();
@@ -24,13 +24,19 @@ enum CloneError {
     FsError(fs_extra_error::Error)
 }
 
-fn clone() -> Result<PathBuf, CloneError> {
+fn clone_templates_repo()-> Result<(), CloneError> {
     let home_dir = home_dir().expect("failed to read home directory");
 
     let config_dir = home_dir.join(CONFIG_DIR);
 
     println!("{:?}", config_dir);
 
+    clone(config_dir)?;
+
+    Ok(())
+}
+
+fn clone(config_dir: PathBuf) -> Result<PathBuf, CloneError> {
     let temp_dir = tempdir().map_err(CloneError::IoError)?;
 
     let temp_path = temp_dir.path().join(REPOSITORY_DIR);
