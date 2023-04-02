@@ -94,7 +94,16 @@ fn check_upsert_templates(shared_dir: &Path, cloned_folder_name: &str)->bool{
     command.current_dir(cache_dir);
 
     match command.output() {
-        Ok(_) => false,
+        Ok(output) => {
+            if output.status.success(){
+                println!("Existing hash: {:?}", String::from_utf8_lossy(&output.stdout).trim());
+                let existing_hash = String::from_utf8_lossy(&output.stdout).trim().to_owned();
+                existing_hash != get_app_template_repo_commit()
+            } else {
+                eprintln!("Unable to check existing cache hash\n{:?}", output.stderr);
+                true
+            }
+        },
         Err(e) => {
             match e.kind() {
                 io::ErrorKind::NotFound=> {
