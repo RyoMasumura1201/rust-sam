@@ -31,14 +31,14 @@ fn clone_templates_repo()-> Result<(), CloneError> {
 
     println!("{:?}", config_dir);
 
-    println!("{:?}", get_app_template_repo_commit());
+    let commit = get_app_template_repo_commit();
 
-    clone(config_dir)?;
+    clone(config_dir, &commit)?;
 
     Ok(())
 }
 
-fn clone(config_dir: PathBuf) -> Result<PathBuf, CloneError> {
+fn clone(config_dir: PathBuf, commit: &str) -> Result<PathBuf, CloneError> {
     let temp_dir = tempdir().map_err(CloneError::IoError)?;
 
     let temp_path = temp_dir.path().join(REPOSITORY_DIR);
@@ -49,13 +49,23 @@ fn clone(config_dir: PathBuf) -> Result<PathBuf, CloneError> {
 
     println!("Cloning from {} (process may take a moment)", SAM_TEMPLATE_URL);
 
-    match Command::new("git")
-        .args(["clone", SAM_TEMPLATE_URL, temp_path_str])
-        .output() {
-            Ok(_)=>(),
-            Err(e)=> return Err(CloneError::IoError(e))
-        }
-        
+    let mut clone_command = Command::new("git");
+    clone_command.args(["clone", SAM_TEMPLATE_URL]);
+    clone_command.current_dir(temp_dir.path());
+
+    match clone_command.output() {
+        Ok(_)=>(),
+        Err(e)=> return Err(CloneError::IoError(e))
+    }   
+    
+    let mut checkout_command = Command::new("git");
+    checkout_command.args(["checkout", commit]);
+    checkout_command.current_dir(temp_path_str);
+
+    match checkout_command.output() {
+        Ok(_)=>(),
+        Err(e)=> return Err(CloneError::IoError(e))
+    }   
 
     match persist_local_repo(temp_path_str, config_dir, REPOSITORY_DIR) {
         Ok(path) => Ok(path),
