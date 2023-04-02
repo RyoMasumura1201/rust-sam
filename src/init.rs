@@ -4,7 +4,7 @@ use tempfile::tempdir;
 use dirs::home_dir;
 use fs_extra::dir::{copy, CopyOptions};
 
-use crate::constants::{SAM_TEMPLATE_URL, REPOSITORY_DIR, CONFIG_DIR};
+use crate::config::{SAM_TEMPLATE_URL, REPOSITORY_DIR, CONFIG_DIR};
 
 pub fn init() {
     match clone_templates_repo() {
