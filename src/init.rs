@@ -4,7 +4,7 @@ use tempfile::tempdir;
 use dirs::home_dir;
 use fs_extra::dir::{copy, CopyOptions};
 
-use crate::config::{SAM_TEMPLATE_URL, REPOSITORY_DIR, CONFIG_DIR};
+use crate::config::{SAM_TEMPLATE_URL, REPOSITORY_DIR, CONFIG_DIR, get_app_template_repo_commit};
 
 pub fn init() {
     match clone_templates_repo() {
@@ -30,6 +30,8 @@ fn clone_templates_repo()-> Result<(), CloneError> {
     let config_dir = home_dir.join(CONFIG_DIR);
 
     println!("{:?}", config_dir);
+
+    println!("{:?}", get_app_template_repo_commit());
 
     clone(config_dir)?;
 
