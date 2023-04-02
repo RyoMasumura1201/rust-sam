@@ -1,4 +1,4 @@
-use std::{process::Command, path::PathBuf, io};
+use std::{process::Command, path::PathBuf, path::Path, io};
 use fs_extra::error as fs_extra_error;
 use tempfile::tempdir;
 use dirs::home_dir;
@@ -87,7 +87,7 @@ fn persist_local_repo(temp_path: &str, dest_dir: &PathBuf, dest_name: &str) -> R
     Ok(dest_path)
 }
 
-fn check_upsert_templates(shared_dir: &PathBuf, cloned_folder_name: &str)->bool{
+fn check_upsert_templates(shared_dir: &Path, cloned_folder_name: &str)->bool{
     let cache_dir = shared_dir.join(cloned_folder_name);
     let mut command = Command::new("git");
     command.args(["rev-parse", "--verify", "HEAD"]);
