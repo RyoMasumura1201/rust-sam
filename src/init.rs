@@ -31,14 +31,19 @@ fn clone_templates_repo()-> Result<(), CloneError> {
 
     println!("{:?}", config_dir);
 
+    if !check_upsert_templates(&config_dir, REPOSITORY_DIR) {
+        print!("check");
+        return Ok(());
+    }
+
     let commit = get_app_template_repo_commit();
 
-    clone(config_dir, &commit)?;
+    clone(&config_dir, &commit)?;
 
     Ok(())
 }
 
-fn clone(config_dir: PathBuf, commit: &str) -> Result<PathBuf, CloneError> {
+fn clone(config_dir: &PathBuf, commit: &str) -> Result<PathBuf, CloneError> {
     let temp_dir = tempdir().map_err(CloneError::IoError)?;
 
     let temp_path = temp_dir.path().join(REPOSITORY_DIR);
@@ -73,13 +78,35 @@ fn clone(config_dir: PathBuf, commit: &str) -> Result<PathBuf, CloneError> {
     }
 }
 
-fn persist_local_repo(temp_path: &str, dest_dir: PathBuf, dest_name: &str) -> Result<PathBuf, fs_extra_error::Error>{
+fn persist_local_repo(temp_path: &str, dest_dir: &PathBuf, dest_name: &str) -> Result<PathBuf, fs_extra_error::Error>{
     let dest_path = dest_dir.join(dest_name);
     let options = CopyOptions::new();
 
-    copy(temp_path, &dest_dir, &options)?;
+    copy(temp_path, dest_dir, &options)?;
 
     Ok(dest_path)
+}
+
+fn check_upsert_templates(shared_dir: &PathBuf, cloned_folder_name: &str)->bool{
+    let cache_dir = shared_dir.join(cloned_folder_name);
+    let mut command = Command::new("git");
+    command.args(["rev-parse", "--verify", "HEAD"]);
+    command.current_dir(cache_dir);
+
+    match command.output() {
+        Ok(_) => false,
+        Err(e) => {
+            match e.kind() {
+                io::ErrorKind::NotFound=> {
+                    eprintln!("Cache directory does not yet exist, creating one.");
+                },
+                _=> {
+                    eprintln!("rev-parse  {:?}", e);
+                }
+            }
+            true
+        }
+    }
 }
 
 fn generate_files() {
