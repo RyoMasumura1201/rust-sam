@@ -101,7 +101,7 @@ fn check_upsert_templates(shared_dir: &Path, cloned_folder_name: &str)->bool{
                     eprintln!("Cache directory does not yet exist, creating one.");
                 },
                 _=> {
-                    eprintln!("rev-parse  {:?}", e);
+                    eprintln!("Unable to check existing cache hash\n{:?}", e);
                 }
             }
             true
