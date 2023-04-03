@@ -61,16 +61,12 @@ fn clone(config_dir: &PathBuf, commit: &str) -> Result<PathBuf, CloneError> {
     match clone_command.output() {
         Ok(_)=>(),
         Err(e)=> return Err(CloneError::IoError(e))
-    }   
-    
-    let mut checkout_command = Command::new("git");
-    checkout_command.args(["checkout", commit]);
-    checkout_command.current_dir(temp_path_str);
+    }
 
-    match checkout_command.output() {
-        Ok(_)=>(),
-        Err(e)=> return Err(CloneError::IoError(e))
-    }   
+    match checkout_commit(temp_path_str, commit){
+        Ok(_) => (),
+        Err(e) => return Err(CloneError::IoError(e)),
+    }  
 
     match persist_local_repo(temp_path_str, config_dir, REPOSITORY_DIR) {
         Ok(path) => Ok(path),
@@ -116,6 +112,16 @@ fn check_upsert_templates(shared_dir: &Path, cloned_folder_name: &str)->bool{
             true
         }
     }
+}
+
+
+fn checkout_commit (repo_dir: &str, commit: &str)-> Result<(), io::Error> {
+    let mut checkout_command = Command::new("git");
+    checkout_command.args(["checkout", commit]);
+    checkout_command.current_dir(repo_dir);
+
+    checkout_command.output()?;
+    Ok(())
 }
 
 fn generate_files() {
