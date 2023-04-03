@@ -58,15 +58,9 @@ fn clone(config_dir: &PathBuf, commit: &str) -> Result<PathBuf, CloneError> {
     clone_command.args(["clone", SAM_TEMPLATE_URL]);
     clone_command.current_dir(temp_dir.path());
 
-    match clone_command.output() {
-        Ok(_)=>(),
-        Err(e)=> return Err(CloneError::IoError(e))
-    }
+    clone_command.output().map_err(CloneError::IoError)?;
 
-    match checkout_commit(temp_path_str, commit){
-        Ok(_) => (),
-        Err(e) => return Err(CloneError::IoError(e)),
-    }  
+    checkout_commit(temp_path_str, commit).map_err(CloneError::IoError)?;
 
     match persist_local_repo(temp_path_str, config_dir, REPOSITORY_DIR) {
         Ok(path) => Ok(path),
