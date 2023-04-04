@@ -3,8 +3,10 @@ mod cli;
 use cli::{Commands, Cli};
 mod init;
 pub mod config;
+use crate::config as global_config;
 
 fn main() {
+    global_config::create_config_directory_if_not_exists().expect("configディレクトリ作成に失敗しました");
     let cli = Cli::parse();
 
     match &cli.command {

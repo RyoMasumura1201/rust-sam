@@ -1,6 +1,9 @@
 use serde::Deserialize;
 use std::fs::File;
 use std::io::Read;
+use std::fs;
+use std::io::Result;
+use dirs::home_dir;
 
 pub const SAM_TEMPLATE_URL: &str = "https://github.com/aws/aws-sam-cli-app-templates.git";
 
@@ -25,4 +28,14 @@ pub fn get_app_template_repo_commit()-> String{
         .expect("Failed to deserialize runtime_config.json");
 
     config.app_template_repo_commit
+}
+
+// [TODO] metadata.json作成
+pub fn create_config_directory_if_not_exists() -> Result<()> {
+    let home_dir = home_dir().expect("failed to read home directory");
+    let config_dir = home_dir.join(CONFIG_DIR);
+    if !config_dir.exists() {
+        fs::create_dir_all(config_dir)?;
+    }
+    Ok(())
 }
