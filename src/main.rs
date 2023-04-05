@@ -3,6 +3,7 @@ mod cli;
 use cli::{Commands, Cli};
 mod init;
 pub mod config;
+pub mod cookiecutter;
 use crate::config as global_config;
 
 fn main() {
