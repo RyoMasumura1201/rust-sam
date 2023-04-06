@@ -6,7 +6,7 @@ use fs_extra::dir::{copy, CopyOptions};
 
 use crate::config::{SAM_TEMPLATE_URL, REPOSITORY_DIR, CONFIG_DIR, get_app_template_repo_commit};
 
-use crate::cookiecutter::cookiecutter;
+use crate::cookiecutter::{cookiecutter, ExtraContext, Architectures};
 
 pub fn init() {
     match clone_templates_repo() {
@@ -21,7 +21,13 @@ pub fn init() {
     let location = home_dir().expect("failed to read home directory").join(CONFIG_DIR).join(REPOSITORY_DIR).join("python3.9/hello");
     println!("{:?}", location);
 
-    generate_project(location, "sam-app");
+    let extra_context = ExtraContext {
+        project_name: "sam-app".to_string(),
+        runtime: "python3.9".to_string(),
+        architectures: Architectures { value: vec!["x86_64".to_string()] }
+    };
+
+    generate_project(location, "sam-app", extra_context);
 }
 
 #[derive(Debug)]
@@ -124,7 +130,7 @@ fn checkout_commit (repo_dir: &str, commit: &str)-> Result<(), io::Error> {
     Ok(())
 }
 
-fn generate_project(location: PathBuf, name: &str) {
+fn generate_project(location: PathBuf, name: &str, extra_context: ExtraContext) {
     println!("generate");
-    cookiecutter(location);
+    cookiecutter(location, extra_context);
 }
