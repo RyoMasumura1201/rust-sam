@@ -9,7 +9,7 @@ use crate::config::{SAM_TEMPLATE_URL, REPOSITORY_DIR, CONFIG_DIR, get_app_templa
 
 use crate::cookiecutter::{cookiecutter};
 
-pub fn init() {
+pub fn init(name: &str) {
     match clone_templates_repo() {
         Ok(_) => {
             println!("cloned");
@@ -28,7 +28,7 @@ pub fn init() {
         "architectures":  vec!["x86_64".to_string()]
     });
 
-    generate_project(location, "sam-app", extra_context);
+    generate_project(location, name, extra_context);
 }
 
 #[derive(Debug)]

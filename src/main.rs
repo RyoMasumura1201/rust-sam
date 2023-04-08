@@ -15,11 +15,12 @@ fn main() {
             println!("'myapp init' was used");
             match name {
                 Some(name) => {
-                    println!("name is {}", name)
+                    println!("name is {}", name);
+                    init::init(name);
                 },
                 None => { 
                     println!("name is not given");
-                    init::init();
+                    init::init("sam-app");
                 },
             }
         }
