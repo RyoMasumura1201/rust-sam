@@ -23,12 +23,12 @@ pub fn init(name: &str) {
     println!("{:?}", location);
 
     let extra_context = json!({
-        "project_name": "sam-app".to_string(),
+        "project_name": name.to_string(),
         "runtime": "python3.9".to_string(),
         "architectures":  vec!["x86_64".to_string()]
     });
 
-    generate_project(location, name, extra_context);
+    generate_project(location, extra_context);
 }
 
 #[derive(Debug)]
@@ -131,7 +131,7 @@ fn checkout_commit (repo_dir: &str, commit: &str)-> Result<(), io::Error> {
     Ok(())
 }
 
-fn generate_project(location: PathBuf, name: &str, extra_context: Value) {
+fn generate_project(location: PathBuf, extra_context: Value) {
     println!("generate");
     cookiecutter(location, extra_context);
 }
