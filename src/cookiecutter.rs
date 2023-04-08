@@ -1,18 +1,16 @@
 use std::{path::PathBuf, path::Path};
+use serde::Deserialize;
+use serde_json::{json, Value};
 
-#[derive(Debug)]
-pub struct Architectures {
-    pub value: Vec<String>
-}
 
-#[derive(Debug)]
-pub struct ExtraContext {
-    pub project_name: String,
-    pub runtime: String,
-    pub architectures: Architectures
-}
-
-pub fn cookiecutter(template: PathBuf, extra_context: ExtraContext){
+pub fn cookiecutter(template: PathBuf, extra_context: Value){
 
     let context_file = template.join("cookiecutter.json");
+    let context_file = context_file.as_path();
+
+    generate_context(context_file, extra_context)
+}
+
+fn generate_context(context_file: &Path, extra_context: Value){
+
 }

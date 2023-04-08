@@ -3,10 +3,11 @@ use fs_extra::error as fs_extra_error;
 use tempfile::tempdir;
 use dirs::home_dir;
 use fs_extra::dir::{copy, CopyOptions};
+use serde_json::{json, Value};
 
 use crate::config::{SAM_TEMPLATE_URL, REPOSITORY_DIR, CONFIG_DIR, get_app_template_repo_commit};
 
-use crate::cookiecutter::{cookiecutter, ExtraContext, Architectures};
+use crate::cookiecutter::{cookiecutter};
 
 pub fn init() {
     match clone_templates_repo() {
@@ -21,11 +22,11 @@ pub fn init() {
     let location = home_dir().expect("failed to read home directory").join(CONFIG_DIR).join(REPOSITORY_DIR).join("python3.9/hello");
     println!("{:?}", location);
 
-    let extra_context = ExtraContext {
-        project_name: "sam-app".to_string(),
-        runtime: "python3.9".to_string(),
-        architectures: Architectures { value: vec!["x86_64".to_string()] }
-    };
+    let extra_context = json!({
+        "project_name": "sam-app".to_string(),
+        "runtime": "python3.9".to_string(),
+        "architectures":  vec!["x86_64".to_string()]
+    });
 
     generate_project(location, "sam-app", extra_context);
 }
@@ -130,7 +131,7 @@ fn checkout_commit (repo_dir: &str, commit: &str)-> Result<(), io::Error> {
     Ok(())
 }
 
-fn generate_project(location: PathBuf, name: &str, extra_context: ExtraContext) {
+fn generate_project(location: PathBuf, name: &str, extra_context: Value) {
     println!("generate");
     cookiecutter(location, extra_context);
 }
