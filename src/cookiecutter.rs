@@ -2,6 +2,7 @@ use std::{path::PathBuf, path::Path};
 use serde_json::{json, Value};
 use std::fs::File;
 use std::io::Read;
+use std::env;
 
 
 pub fn cookiecutter(template: PathBuf, extra_context: Value){
@@ -13,6 +14,7 @@ pub fn cookiecutter(template: PathBuf, extra_context: Value){
 
     if let Some(Value::Object(ref mut cookiecutter_map)) = context.get_mut("cookiecutter"){
         cookiecutter_map.insert("_template".to_string(), json!(template.to_str()));
+        cookiecutter_map.insert("_output_dir".to_string(), json!(env::current_dir().expect("failed to get current dir").to_str()));
     }
 
     println!("{:?}", context);
