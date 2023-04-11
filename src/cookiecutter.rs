@@ -1,7 +1,8 @@
-use std::{path::PathBuf, path::Path};
+use std::path::{PathBuf, Path};
 use serde_json::{json, Value};
-use std::fs::File;
-use std::io::Read;
+use std::fs::{File, read_dir};
+use std::io::{self,Read};
+use std::fmt;
 use std::env;
 
 
@@ -18,6 +19,8 @@ pub fn cookiecutter(template: PathBuf, extra_context: Value)-> Result<(), Box<dy
     }
 
     println!("{:?}", context);
+
+    generate_files(template, context, env::current_dir()?);
     Ok(())
 }
 
@@ -44,5 +47,44 @@ fn apply_overwrites_to_context(context: &mut Value, overwrite_context: Value){
         for (key, overwrite_value) in overwrite_map {
             context_map.insert(key.clone(), overwrite_value.clone());
         }
+    }
+}
+
+fn generate_files(repo_dir: PathBuf, context: Value, output_dir: PathBuf)-> Result<(), Box<dyn std::error::Error>>{
+    let template_dir = find_template(&repo_dir)?;
+    println!("{:?}", template_dir);
+    Ok(())
+}
+
+#[derive(Debug)]
+struct NonTemplatedInputDirError;
+
+impl fmt::Display for NonTemplatedInputDirError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "No project template found in the specified directory")
+    }
+}
+
+impl std::error::Error for NonTemplatedInputDirError{}
+
+fn find_template(repo_dir: &PathBuf) -> Result<PathBuf, Box<dyn std::error::Error>>{
+    let mut project_template: Option<PathBuf> = None;
+    for entry in read_dir(repo_dir)? {
+        let entry = entry?;
+        if let Some(entry_name) =entry.file_name().to_str(){
+            if entry_name.contains("cookiecutter") && entry_name.contains("{{") && entry_name.contains("}}") {
+                project_template = Some(entry.path());
+                break;
+            }
+        }   
+    }
+
+    match project_template {
+        Some(template) => {
+            let project_template = repo_dir.join(template);
+            println!("{:?}", project_template);
+            Ok(project_template)
+        },
+        None=>Err(Box::new(NonTemplatedInputDirError)),
     }
 }
