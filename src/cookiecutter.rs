@@ -4,6 +4,7 @@ use std::fs::{File, read_dir};
 use std::io::{self,Read};
 use std::fmt;
 use std::env;
+use tera;
 
 
 pub fn cookiecutter(template: PathBuf, extra_context: Value)-> Result<(), Box<dyn std::error::Error>>{
@@ -53,6 +54,10 @@ fn apply_overwrites_to_context(context: &mut Value, overwrite_context: Value){
 fn generate_files(repo_dir: PathBuf, context: Value, output_dir: PathBuf)-> Result<(), Box<dyn std::error::Error>>{
     let template_dir = find_template(&repo_dir)?;
     println!("{:?}", template_dir);
+    let unrendered_dir = template_dir.as_path().file_name().unwrap().to_str().unwrap();
+
+    render_and_create_dir(unrendered_dir, context, output_dir);
+
     Ok(())
 }
 
@@ -87,4 +92,16 @@ fn find_template(repo_dir: &PathBuf) -> Result<PathBuf, Box<dyn std::error::Erro
         },
         None=>Err(Box::new(NonTemplatedInputDirError)),
     }
+}
+
+fn render_and_create_dir(dirname: &str, context: Value, output_dir: PathBuf) -> Result<(), Box<dyn std::error::Error>>{
+
+    let tera_context = tera::Context::from_value(context)?;
+
+    let mut tera = tera::Tera::default();
+    let rendered_dirname = tera.render_str(dirname, &tera_context)?;
+
+    println!("{:?}", rendered_dirname);
+
+    Ok(())
 }
