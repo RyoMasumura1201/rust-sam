@@ -1,6 +1,6 @@
 use std::path::{PathBuf, Path};
 use serde_json::{json, Value};
-use std::fs::{File, read_dir};
+use std::fs::{File, read_dir, create_dir};
 use std::io::{self,Read};
 use std::fmt;
 use std::env;
@@ -120,6 +120,8 @@ fn render_and_create_dir(dirname: &str, context: Value, output_dir: PathBuf) -> 
     if dir_to_create.exists(){
         return Err(Box::new(OutputDirExistsError));
     }
+
+    create_dir(dir_to_create)?;
 
     Ok(())
 }
