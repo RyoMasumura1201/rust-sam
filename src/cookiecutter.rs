@@ -75,7 +75,7 @@ fn generate_files(repo_dir: PathBuf, context: Value, output_dir: PathBuf)-> Resu
     println!("{:?}", template_dir);
     let unrendered_dir = template_dir.as_path().file_name().unwrap().to_str().unwrap();
 
-    render_and_create_dir(unrendered_dir, context, output_dir)?;
+    let project_dir = render_and_create_dir(unrendered_dir, context, output_dir)?;
 
     Ok(())
 }
@@ -104,7 +104,7 @@ fn find_template(repo_dir: &PathBuf) -> Result<PathBuf, Box<dyn std::error::Erro
     }
 }
 
-fn render_and_create_dir(dirname: &str, context: Value, output_dir: PathBuf) -> Result<(), Box<dyn std::error::Error>>{
+fn render_and_create_dir(dirname: &str, context: Value, output_dir: PathBuf) -> Result<PathBuf, Box<dyn std::error::Error>>{
 
     let tera_context = tera::Context::from_value(context)?;
 
@@ -121,7 +121,7 @@ fn render_and_create_dir(dirname: &str, context: Value, output_dir: PathBuf) -> 
         return Err(Box::new(OutputDirExistsError));
     }
 
-    create_dir(dir_to_create)?;
+    create_dir(&dir_to_create)?;
 
-    Ok(())
+    Ok(dir_to_create)
 }
