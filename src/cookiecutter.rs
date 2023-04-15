@@ -6,6 +6,25 @@ use std::fmt;
 use std::env;
 use tera;
 
+#[derive(Debug)]
+struct NonTemplatedInputDirError;
+
+impl fmt::Display for NonTemplatedInputDirError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "No project template found in the specified directory")
+    }
+}
+
+#[derive(Debug)]
+struct OutputDirExistsError;
+
+impl fmt::Display for OutputDirExistsError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "output directory already exists")
+    }
+}
+
+impl std::error::Error for OutputDirExistsError{}
 
 pub fn cookiecutter(template: PathBuf, extra_context: Value)-> Result<(), Box<dyn std::error::Error>>{
 
@@ -56,18 +75,9 @@ fn generate_files(repo_dir: PathBuf, context: Value, output_dir: PathBuf)-> Resu
     println!("{:?}", template_dir);
     let unrendered_dir = template_dir.as_path().file_name().unwrap().to_str().unwrap();
 
-    render_and_create_dir(unrendered_dir, context, output_dir);
+    render_and_create_dir(unrendered_dir, context, output_dir)?;
 
     Ok(())
-}
-
-#[derive(Debug)]
-struct NonTemplatedInputDirError;
-
-impl fmt::Display for NonTemplatedInputDirError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "No project template found in the specified directory")
-    }
 }
 
 impl std::error::Error for NonTemplatedInputDirError{}
@@ -102,6 +112,14 @@ fn render_and_create_dir(dirname: &str, context: Value, output_dir: PathBuf) -> 
     let rendered_dirname = tera.render_str(dirname, &tera_context)?;
 
     println!("{:?}", rendered_dirname);
+
+    let dir_to_create = output_dir.join(rendered_dirname);
+
+    println!("{:?}", dir_to_create);
+
+    if dir_to_create.exists(){
+        return Err(Box::new(OutputDirExistsError));
+    }
 
     Ok(())
 }
