@@ -40,7 +40,7 @@ pub fn cookiecutter(template: PathBuf, extra_context: Value)-> Result<(), Box<dy
 
     println!("{:?}", context);
 
-    generate_files(template, context, env::current_dir()?);
+    generate_files(template, context, env::current_dir()?)?;
     Ok(())
 }
 

@@ -9,7 +9,7 @@ use crate::config::{SAM_TEMPLATE_URL, REPOSITORY_DIR, CONFIG_DIR, get_app_templa
 
 use crate::cookiecutter::{cookiecutter};
 
-pub fn init(name: &str) {
+pub fn init(name: &str)->Result<(), Box<dyn std::error::Error>> {
     match clone_templates_repo() {
         Ok(_) => {
             println!("cloned");
@@ -28,7 +28,8 @@ pub fn init(name: &str) {
         "architectures":  vec!["x86_64".to_string()]
     });
 
-    generate_project(location, extra_context);
+    generate_project(location, extra_context)?;
+    Ok(())
 }
 
 #[derive(Debug)]
@@ -131,7 +132,9 @@ fn checkout_commit (repo_dir: &str, commit: &str)-> Result<(), io::Error> {
     Ok(())
 }
 
-fn generate_project(location: PathBuf, extra_context: Value) {
+fn generate_project(location: PathBuf, extra_context: Value) -> Result<(), Box<dyn std::error::Error>>{
     println!("generate");
-    cookiecutter(location, extra_context);
+    cookiecutter(location, extra_context)?;
+
+    Ok(())
 }
