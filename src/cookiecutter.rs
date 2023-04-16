@@ -1,10 +1,12 @@
 use std::path::{PathBuf, Path};
 use serde_json::{json, Value};
+use walkdir::WalkDir;
 use std::fs::{File, read_dir, create_dir};
 use std::io::{self,Read};
 use std::fmt;
 use std::env;
 use tera;
+use glob;
 
 #[derive(Debug)]
 struct NonTemplatedInputDirError;
@@ -75,7 +77,27 @@ fn generate_files(repo_dir: PathBuf, context: Value, output_dir: PathBuf)-> Resu
     println!("{:?}", template_dir);
     let unrendered_dir = template_dir.as_path().file_name().unwrap().to_str().unwrap();
 
-    let project_dir = render_and_create_dir(unrendered_dir, context, output_dir)?;
+    let project_dir = render_and_create_dir(unrendered_dir, &context, output_dir)?;
+
+    let dont_render_list = &context["cookiecutter"]["_copy_without_render"]
+        .as_array().unwrap().iter().map(|value| value.as_str().unwrap()).collect::<Vec<&str>>();
+
+
+    for entry in WalkDir::new(template_dir) {
+
+        let mut copy_dirs: Vec<&Path> = vec![];
+        let mut render_dirs: Vec<&Path> = vec![];
+
+        let entry = entry?;
+
+        if entry.file_type().is_dir(){
+            if is_copy_only_path(entry.file_name().to_str().unwrap(), dont_render_list){
+                copy_dirs.push(entry.path());
+            } else {
+                render_dirs.push(entry.path());
+            }
+        }
+    }
 
     Ok(())
 }
@@ -104,9 +126,9 @@ fn find_template(repo_dir: &PathBuf) -> Result<PathBuf, Box<dyn std::error::Erro
     }
 }
 
-fn render_and_create_dir(dirname: &str, context: Value, output_dir: PathBuf) -> Result<PathBuf, Box<dyn std::error::Error>>{
+fn render_and_create_dir(dirname: &str, context: &Value, output_dir: PathBuf) -> Result<PathBuf, Box<dyn std::error::Error>>{
 
-    let tera_context = tera::Context::from_value(context)?;
+    let tera_context = tera::Context::from_value(context.clone())?;
 
     let mut tera = tera::Tera::default();
     let rendered_dirname = tera.render_str(dirname, &tera_context)?;
@@ -124,4 +146,15 @@ fn render_and_create_dir(dirname: &str, context: Value, output_dir: PathBuf) -> 
     create_dir(&dir_to_create)?;
 
     Ok(dir_to_create)
+}
+
+fn is_copy_only_path(path: &str, dont_render_list:  &Vec<&str>)->bool{
+
+    for dont_render in dont_render_list {
+        if glob::Pattern::new(dont_render).unwrap().matches(path) {
+            return true
+        }
+    }
+
+    return false
 }
