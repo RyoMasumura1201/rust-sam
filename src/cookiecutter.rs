@@ -74,27 +74,33 @@ fn apply_overwrites_to_context(context: &mut Value, overwrite_context: Value){
 
 fn generate_files(repo_dir: PathBuf, context: Value, output_dir: PathBuf)-> Result<(), Box<dyn std::error::Error>>{
     let template_dir = find_template(&repo_dir)?;
-    println!("{:?}", template_dir);
     let unrendered_dir = template_dir.as_path().file_name().unwrap().to_str().unwrap();
 
-    let project_dir = render_and_create_dir(unrendered_dir, &context, output_dir)?;
+    let project_dir = render_and_create_dir(unrendered_dir, &context, &output_dir)?;
 
     let dont_render_list = &context["cookiecutter"]["_copy_without_render"]
         .as_array().unwrap().iter().map(|value| value.as_str().unwrap()).collect::<Vec<&str>>();
 
 
-    for entry in WalkDir::new(template_dir) {
+    for entry in WalkDir::new(&template_dir) {
 
-        let mut copy_dirs: Vec<&Path> = vec![];
-        let mut render_dirs: Vec<&Path> = vec![];
+        let mut copy_dirs: Vec<&str> = vec![];
+        let mut render_dirs: Vec<&str> = vec![];
 
         let entry = entry?;
 
         if entry.file_type().is_dir(){
             if is_copy_only_path(entry.file_name().to_str().unwrap(), dont_render_list){
-                copy_dirs.push(entry.path());
+                copy_dirs.push(entry.path().strip_prefix(&template_dir)?.to_str().unwrap());
             } else {
-                render_dirs.push(entry.path());
+                render_dirs.push(entry.path().strip_prefix(&template_dir)?.to_str().unwrap());
+            }
+        }
+
+        for render_dir in render_dirs{
+            match render_and_create_dir(render_dir, &context, &project_dir){
+                Ok(_)=>(),
+                Err(e)=> println!("Unable to create directory {:?}", e)
             }
         }
     }
@@ -126,7 +132,7 @@ fn find_template(repo_dir: &PathBuf) -> Result<PathBuf, Box<dyn std::error::Erro
     }
 }
 
-fn render_and_create_dir(dirname: &str, context: &Value, output_dir: PathBuf) -> Result<PathBuf, Box<dyn std::error::Error>>{
+fn render_and_create_dir(dirname: &str, context: &Value, output_dir: &Path) -> Result<PathBuf, Box<dyn std::error::Error>>{
 
     let tera_context = tera::Context::from_value(context.clone())?;
 
@@ -136,8 +142,6 @@ fn render_and_create_dir(dirname: &str, context: &Value, output_dir: PathBuf) ->
     println!("{:?}", rendered_dirname);
 
     let dir_to_create = output_dir.join(rendered_dirname);
-
-    println!("{:?}", dir_to_create);
 
     if dir_to_create.exists(){
         return Err(Box::new(OutputDirExistsError));
