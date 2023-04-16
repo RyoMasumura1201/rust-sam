@@ -82,7 +82,7 @@ fn generate_files(repo_dir: PathBuf, context: Value, output_dir: PathBuf)-> Resu
         .as_array().unwrap().iter().map(|value| value.as_str().unwrap()).collect::<Vec<&str>>();
 
 
-    for entry in WalkDir::new(&template_dir) {
+    for entry in WalkDir::new(&template_dir).min_depth(1) {
 
         let mut copy_dirs: Vec<&str> = vec![];
         let mut render_dirs: Vec<&str> = vec![];
