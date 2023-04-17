@@ -1,25 +1,29 @@
-use std::{process::Command, path::PathBuf, path::Path, io};
-use fs_extra::error as fs_extra_error;
-use tempfile::tempdir;
 use dirs::home_dir;
 use fs_extra::dir::{copy, CopyOptions};
+use fs_extra::error as fs_extra_error;
 use serde_json::{json, Value};
+use std::{io, path::Path, path::PathBuf, process::Command};
+use tempfile::tempdir;
 
-use crate::config::{SAM_TEMPLATE_URL, REPOSITORY_DIR, CONFIG_DIR, get_app_template_repo_commit};
+use crate::config::{get_app_template_repo_commit, CONFIG_DIR, REPOSITORY_DIR, SAM_TEMPLATE_URL};
 
-use crate::cookiecutter::{cookiecutter};
+use crate::cookiecutter::cookiecutter;
 
-pub fn init(name: &str)->Result<(), Box<dyn std::error::Error>> {
+pub fn init(name: &str) -> Result<(), Box<dyn std::error::Error>> {
     match clone_templates_repo() {
         Ok(_) => {
             println!("cloned");
         }
-        Err(e)=> {
+        Err(e) => {
             eprintln!("git clone failed with error:{:?}", e);
         }
     }
 
-    let location = home_dir().expect("failed to read home directory").join(CONFIG_DIR).join(REPOSITORY_DIR).join("python3.9/hello");
+    let location = home_dir()
+        .expect("failed to read home directory")
+        .join(CONFIG_DIR)
+        .join(REPOSITORY_DIR)
+        .join("python3.9/hello");
     println!("{:?}", location);
 
     let extra_context = json!({
@@ -35,10 +39,10 @@ pub fn init(name: &str)->Result<(), Box<dyn std::error::Error>> {
 #[derive(Debug)]
 enum CloneError {
     IoError(io::Error),
-    FsError(fs_extra_error::Error)
+    FsError(fs_extra_error::Error),
 }
 
-fn clone_templates_repo()-> Result<(), CloneError> {
+fn clone_templates_repo() -> Result<(), CloneError> {
     let home_dir = home_dir().expect("failed to read home directory");
 
     let config_dir = home_dir.join(CONFIG_DIR);
@@ -62,11 +66,17 @@ fn clone(config_dir: &PathBuf, commit: &str) -> Result<PathBuf, CloneError> {
 
     let temp_path = temp_dir.path().join(REPOSITORY_DIR);
 
-    println!("{:?}",temp_path);
+    println!("{:?}", temp_path);
 
-    let temp_path_str = temp_path.as_path().to_str().expect("Failed to convert PathBuf to str");
+    let temp_path_str = temp_path
+        .as_path()
+        .to_str()
+        .expect("Failed to convert PathBuf to str");
 
-    println!("Cloning from {} (process may take a moment)", SAM_TEMPLATE_URL);
+    println!(
+        "Cloning from {} (process may take a moment)",
+        SAM_TEMPLATE_URL
+    );
 
     let mut clone_command = Command::new("git");
     clone_command.args(["clone", SAM_TEMPLATE_URL]);
@@ -82,7 +92,11 @@ fn clone(config_dir: &PathBuf, commit: &str) -> Result<PathBuf, CloneError> {
     }
 }
 
-fn persist_local_repo(temp_path: &str, dest_dir: &PathBuf, dest_name: &str) -> Result<PathBuf, fs_extra_error::Error>{
+fn persist_local_repo(
+    temp_path: &str,
+    dest_dir: &PathBuf,
+    dest_name: &str,
+) -> Result<PathBuf, fs_extra_error::Error> {
     let dest_path = dest_dir.join(dest_name);
     let options = CopyOptions::new();
 
@@ -91,7 +105,7 @@ fn persist_local_repo(temp_path: &str, dest_dir: &PathBuf, dest_name: &str) -> R
     Ok(dest_path)
 }
 
-fn check_upsert_templates(shared_dir: &Path, cloned_folder_name: &str)->bool{
+fn check_upsert_templates(shared_dir: &Path, cloned_folder_name: &str) -> bool {
     let cache_dir = shared_dir.join(cloned_folder_name);
     let mut command = Command::new("git");
     command.args(["rev-parse", "--verify", "HEAD"]);
@@ -99,21 +113,24 @@ fn check_upsert_templates(shared_dir: &Path, cloned_folder_name: &str)->bool{
 
     match command.output() {
         Ok(output) => {
-            if output.status.success(){
-                println!("Existing hash: {:?}", String::from_utf8_lossy(&output.stdout).trim());
+            if output.status.success() {
+                println!(
+                    "Existing hash: {:?}",
+                    String::from_utf8_lossy(&output.stdout).trim()
+                );
                 let existing_hash = String::from_utf8_lossy(&output.stdout).trim().to_owned();
                 existing_hash != get_app_template_repo_commit()
             } else {
                 eprintln!("Unable to check existing cache hash\n{:?}", output.stderr);
                 true
             }
-        },
+        }
         Err(e) => {
             match e.kind() {
-                io::ErrorKind::NotFound=> {
+                io::ErrorKind::NotFound => {
                     eprintln!("Cache directory does not yet exist, creating one.");
-                },
-                _=> {
+                }
+                _ => {
                     eprintln!("Unable to check existing cache hash\n{:?}", e);
                 }
             }
@@ -122,8 +139,7 @@ fn check_upsert_templates(shared_dir: &Path, cloned_folder_name: &str)->bool{
     }
 }
 
-
-fn checkout_commit (repo_dir: &str, commit: &str)-> Result<(), io::Error> {
+fn checkout_commit(repo_dir: &str, commit: &str) -> Result<(), io::Error> {
     let mut checkout_command = Command::new("git");
     checkout_command.args(["checkout", commit]);
     checkout_command.current_dir(repo_dir);
@@ -132,7 +148,10 @@ fn checkout_commit (repo_dir: &str, commit: &str)-> Result<(), io::Error> {
     Ok(())
 }
 
-fn generate_project(location: PathBuf, extra_context: Value) -> Result<(), Box<dyn std::error::Error>>{
+fn generate_project(
+    location: PathBuf,
+    extra_context: Value,
+) -> Result<(), Box<dyn std::error::Error>> {
     println!("generate");
     cookiecutter(location, extra_context)?;
 

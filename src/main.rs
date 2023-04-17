@@ -1,13 +1,14 @@
 use clap::Parser;
 mod cli;
-use cli::{Commands, Cli};
-mod init;
+use cli::{Cli, Commands};
 pub mod config;
 pub mod cookiecutter;
+mod init;
 use crate::config as global_config;
 
 fn main() {
-    global_config::create_config_directory_if_not_exists().expect("configディレクトリ作成に失敗しました");
+    global_config::create_config_directory_if_not_exists()
+        .expect("configディレクトリ作成に失敗しました");
     let cli = Cli::parse();
 
     match &cli.command {
@@ -17,11 +18,11 @@ fn main() {
                 Some(name) => {
                     println!("name is {}", name);
                     init::init(name);
-                },
-                None => { 
+                }
+                None => {
                     println!("name is not given");
                     init::init("sam-app");
-                },
+                }
             }
         }
         None => {}
