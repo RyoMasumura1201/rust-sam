@@ -2,7 +2,7 @@ use glob;
 use serde_json::{json, Value};
 use std::env;
 use std::fmt;
-use std::fs::{create_dir, read_dir, File};
+use std::fs::{copy, create_dir, metadata, read_dir, set_permissions, File, Permissions};
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 use tera;
@@ -139,6 +139,10 @@ fn generate_files(
                 let outfile = project_dir
                     .join(entry.path().strip_prefix(&template_dir)?)
                     .with_file_name(outfile_rendered);
+                copy(entry.path(), &outfile)?;
+                let metadata = metadata(entry.path())?;
+                let permissions = metadata.permissions();
+                set_permissions(&outfile, permissions)?;
             } else {
             }
         }
