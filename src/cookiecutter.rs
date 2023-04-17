@@ -126,6 +126,24 @@ fn generate_files(
         }
     }
 
+    for entry in WalkDir::new(&template_dir).min_depth(1) {
+        let entry = entry?;
+
+        if entry.file_type().is_file() {
+            let file_name = entry.file_name().to_str().unwrap();
+            if is_copy_only_path(file_name, dont_render_list) {
+                let tera_context = tera::Context::from_value(context.clone())?;
+
+                let mut tera = tera::Tera::default();
+                let outfile_rendered = tera.render_str(file_name, &tera_context)?;
+                let outfile = project_dir
+                    .join(entry.path().strip_prefix(&template_dir)?)
+                    .with_file_name(outfile_rendered);
+            } else {
+            }
+        }
+    }
+
     Ok(())
 }
 
