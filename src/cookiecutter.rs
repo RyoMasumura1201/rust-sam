@@ -6,6 +6,7 @@ use std::fs::{copy, create_dir, metadata, read_dir, set_permissions, File, Permi
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 use tera;
+use tera::Context;
 use walkdir::WalkDir;
 
 #[derive(Debug)]
@@ -131,9 +132,8 @@ fn generate_files(
 
         if entry.file_type().is_file() {
             let file_name = entry.file_name().to_str().unwrap();
+            let tera_context = tera::Context::from_value(context.clone())?;
             if is_copy_only_path(file_name, dont_render_list) {
-                let tera_context = tera::Context::from_value(context.clone())?;
-
                 let mut tera = tera::Tera::default();
                 let outfile_rendered = tera.render_str(file_name, &tera_context)?;
                 let outfile = project_dir
@@ -144,6 +144,11 @@ fn generate_files(
                 let permissions = metadata.permissions();
                 set_permissions(&outfile, permissions)?;
             } else {
+                generate_file(
+                    project_dir.as_path(),
+                    entry.path().strip_prefix(&template_dir)?,
+                    &tera_context,
+                )?
             }
         }
     }
@@ -209,4 +214,19 @@ fn is_copy_only_path(path: &str, dont_render_list: &Vec<&str>) -> bool {
     }
 
     return false;
+}
+
+fn generate_file(
+    project_dir: &Path,
+    infile: &Path,
+    context: &Context,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let mut tera = tera::Tera::default();
+    let outfile_tmpl = tera.render_str(infile.to_str().unwrap(), context)?;
+
+    let outfile = project_dir.join(outfile_tmpl);
+
+    println!("outfile {:?}", outfile);
+
+    Ok(())
 }
