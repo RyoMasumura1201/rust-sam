@@ -6,7 +6,7 @@ use std::fs::{copy, create_dir, metadata, read_dir, set_permissions, File, Permi
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 use tera;
-use tera::Context;
+use tera::{Context, Tera};
 use walkdir::WalkDir;
 
 #[derive(Debug)]
@@ -132,9 +132,9 @@ fn generate_files(
 
         if entry.file_type().is_file() {
             let file_name = entry.file_name().to_str().unwrap();
-            let tera_context = tera::Context::from_value(context.clone())?;
+            let tera_context = Context::from_value(context.clone())?;
             if is_copy_only_path(file_name, dont_render_list) {
-                let mut tera = tera::Tera::default();
+                let mut tera = Tera::default();
                 let outfile_rendered = tera.render_str(file_name, &tera_context)?;
                 let outfile = project_dir
                     .join(entry.path().strip_prefix(&template_dir)?)
@@ -188,9 +188,9 @@ fn render_and_create_dir(
     context: &Value,
     output_dir: &Path,
 ) -> Result<PathBuf, Box<dyn std::error::Error>> {
-    let tera_context = tera::Context::from_value(context.clone())?;
+    let tera_context = Context::from_value(context.clone())?;
 
-    let mut tera = tera::Tera::default();
+    let mut tera = Tera::default();
     let rendered_dirname = tera.render_str(dirname, &tera_context)?;
 
     println!("{:?}", rendered_dirname);
@@ -221,7 +221,7 @@ fn generate_file(
     infile: &Path,
     context: &Context,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let mut tera = tera::Tera::default();
+    let mut tera = Tera::default();
     let outfile_tmpl = tera.render_str(infile.to_str().unwrap(), context)?;
 
     let outfile = project_dir.join(outfile_tmpl);
