@@ -29,7 +29,9 @@ pub fn init(name: &str) -> Result<(), Box<dyn std::error::Error>> {
     let extra_context = json!({
         "project_name": name.to_string(),
         "runtime": "python3.9".to_string(),
-        "architectures":  vec!["x86_64".to_string()]
+        "architectures":  {
+            "value": vec!["x86_64".to_string()]
+        }
     });
 
     generate_project(location, extra_context)?;
