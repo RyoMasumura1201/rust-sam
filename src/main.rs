@@ -17,11 +17,21 @@ fn main() {
             match name {
                 Some(name) => {
                     println!("name is {}", name);
-                    init::init(name);
+                    match init::init(name) {
+                        Ok(_) => {}
+                        Err(e) => {
+                            println!("init failed {:?}", e);
+                        }
+                    }
                 }
                 None => {
                     println!("name is not given");
-                    init::init("sam-app");
+                    match init::init("sam-app") {
+                        Ok(_) => {}
+                        Err(e) => {
+                            println!("init failed {:?}", e);
+                        }
+                    }
                 }
             }
         }
