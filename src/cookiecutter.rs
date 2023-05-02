@@ -2,10 +2,9 @@ use glob;
 use serde_json::{json, Value};
 use std::env;
 use std::fmt;
-use std::fs::{copy, create_dir, metadata, read_dir, set_permissions, File, Permissions};
-use std::io::{self, Read};
+use std::fs::{self, copy, create_dir, metadata, read_dir, set_permissions, File};
+use std::io::Read;
 use std::path::{Path, PathBuf};
-use tera;
 use tera::{Context, Tera};
 use walkdir::WalkDir;
 
@@ -146,7 +145,8 @@ fn generate_files(
             } else {
                 generate_file(
                     project_dir.as_path(),
-                    entry.path().strip_prefix(&template_dir)?,
+                    entry.path(),
+                    &template_dir,
                     &tera_context,
                 )?
             }
@@ -218,9 +218,11 @@ fn is_copy_only_path(path: &str, dont_render_list: &Vec<&str>) -> bool {
 
 fn generate_file(
     project_dir: &Path,
-    infile: &Path,
+    file: &Path,
+    template_dir: &Path,
     context: &Context,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    let infile = file.strip_prefix(template_dir)?;
     let mut tera = Tera::default();
     let outfile_tmpl = tera.render_str(infile.to_str().unwrap(), context)?;
 
@@ -228,5 +230,40 @@ fn generate_file(
 
     println!("outfile {:?}", outfile);
 
+    match tera.add_raw_template("template", &load_template(file.to_str().unwrap())?) {
+        Ok(t) => (),
+        Err(e) => {
+            println!("{:?}", e);
+            std::process::exit(1);
+        }
+    };
+
+    println!("add raw template finish");
+
+    let rendered_file = match tera.render("template", context) {
+        Ok(t) => t,
+        Err(e) => {
+            println!("{:?}", e);
+            std::process::exit(1)
+        }
+    };
+
+    println!("renderedfile {:?}", rendered_file);
+
+    fs::write(outfile, rendered_file);
+
     Ok(())
+}
+
+fn load_template(path: &str) -> Result<String, Box<dyn std::error::Error>> {
+    let mut file = File::open(path)?;
+    let mut content = String::new();
+    file.read_to_string(&mut content)?;
+
+    // rewrite Jinja2 syntax to Tera syntax.
+    let replaced_content = content
+        .replace("{%-", "{%")
+        .replace("!= []", "| length > 0 ");
+
+    Ok(replaced_content)
 }
