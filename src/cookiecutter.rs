@@ -3,7 +3,7 @@ use serde_json::{json, Value};
 use std::env;
 use std::fmt;
 use std::fs::{self, copy, create_dir, metadata, read_dir, set_permissions, File};
-use std::io::Read;
+use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 use tera::{Context, Tera};
 use walkdir::WalkDir;
@@ -251,7 +251,7 @@ fn generate_file(
     Ok(())
 }
 
-fn load_template(path: &str) -> Result<String, Box<dyn std::error::Error>> {
+fn load_template(path: &str) -> Result<String, io::Error> {
     let mut file = File::open(path)?;
     let mut content = String::new();
     file.read_to_string(&mut content)?;
