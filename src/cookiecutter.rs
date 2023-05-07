@@ -251,7 +251,7 @@ fn generate_file(
     Ok(())
 }
 
-fn load_template(path: &str) -> Result<String, io::Error> {
+fn load_template(path: &str) -> io::Result<String> {
     let mut file = File::open(path)?;
     let mut content = String::new();
     file.read_to_string(&mut content)?;

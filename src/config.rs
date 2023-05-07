@@ -1,9 +1,7 @@
 use dirs::home_dir;
 use serde::Deserialize;
-use std::fs;
-use std::fs::File;
-use std::io::Read;
-use std::io::Result;
+use std::fs::{self, File};
+use std::io::{self, Read};
 
 pub const SAM_TEMPLATE_URL: &str = "https://github.com/aws/aws-sam-cli-app-templates.git";
 
@@ -31,7 +29,7 @@ pub fn get_app_template_repo_commit() -> String {
 }
 
 // [TODO] metadata.json作成
-pub fn create_config_directory_if_not_exists() -> Result<()> {
+pub fn create_config_directory_if_not_exists() -> io::Result<()> {
     let home_dir = home_dir().expect("failed to read home directory");
     let config_dir = home_dir.join(CONFIG_DIR);
     if !config_dir.exists() {
