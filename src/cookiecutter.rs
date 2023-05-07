@@ -1,6 +1,7 @@
 use glob;
 use serde_json::{json, Value};
 use std::env;
+use std::error::Error;
 use std::fmt;
 use std::fs::{self, copy, create_dir, metadata, read_dir, set_permissions, File};
 use std::io::{self, Read};
@@ -28,10 +29,7 @@ impl fmt::Display for OutputDirExistsError {
 
 impl std::error::Error for OutputDirExistsError {}
 
-pub fn cookiecutter(
-    template: PathBuf,
-    extra_context: Value,
-) -> Result<(), Box<dyn std::error::Error>> {
+pub fn cookiecutter(template: PathBuf, extra_context: Value) -> Result<(), Box<dyn Error>> {
     let context_file = template.join("cookiecutter.json");
     let context_file = context_file.as_path();
 
@@ -53,10 +51,7 @@ pub fn cookiecutter(
     Ok(())
 }
 
-fn generate_context(
-    context_file: &Path,
-    extra_context: Value,
-) -> Result<Value, Box<dyn std::error::Error>> {
+fn generate_context(context_file: &Path, extra_context: Value) -> Result<Value, Box<dyn Error>> {
     let mut file = File::open(context_file)?;
 
     let mut contents = String::new();
@@ -86,7 +81,7 @@ fn generate_files(
     repo_dir: PathBuf,
     context: Value,
     output_dir: PathBuf,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), Box<dyn Error>> {
     let template_dir = find_template(&repo_dir)?;
     let unrendered_dir = template_dir
         .as_path()
@@ -158,7 +153,7 @@ fn generate_files(
 
 impl std::error::Error for NonTemplatedInputDirError {}
 
-fn find_template(repo_dir: &PathBuf) -> Result<PathBuf, Box<dyn std::error::Error>> {
+fn find_template(repo_dir: &PathBuf) -> Result<PathBuf, Box<dyn Error>> {
     let mut project_template: Option<PathBuf> = None;
     for entry in read_dir(repo_dir)? {
         let entry = entry?;
@@ -187,7 +182,7 @@ fn render_and_create_dir(
     dirname: &str,
     context: &Value,
     output_dir: &Path,
-) -> Result<PathBuf, Box<dyn std::error::Error>> {
+) -> Result<PathBuf, Box<dyn Error>> {
     let tera_context = Context::from_value(context.clone())?;
 
     let mut tera = Tera::default();
@@ -221,7 +216,7 @@ fn generate_file(
     file: &Path,
     template_dir: &Path,
     context: &Context,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), Box<dyn Error>> {
     let infile = file.strip_prefix(template_dir)?;
     let mut tera = Tera::default();
     let outfile_tmpl = tera.render_str(infile.to_str().unwrap(), context)?;

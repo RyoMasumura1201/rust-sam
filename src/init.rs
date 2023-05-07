@@ -2,14 +2,14 @@ use dirs::home_dir;
 use fs_extra::dir::{copy, CopyOptions};
 use fs_extra::error as fs_extra_error;
 use serde_json::{json, Value};
-use std::{io, path::Path, path::PathBuf, process::Command};
+use std::{error::Error, io, path::Path, path::PathBuf, process::Command};
 use tempfile::tempdir;
 
 use crate::config::{get_app_template_repo_commit, CONFIG_DIR, REPOSITORY_DIR, SAM_TEMPLATE_URL};
 
 use crate::cookiecutter::cookiecutter;
 
-pub fn init(name: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn init(name: &str) -> Result<(), Box<dyn Error>> {
     match clone_templates_repo() {
         Ok(_) => {
             println!("cloned");
@@ -150,10 +150,7 @@ fn checkout_commit(repo_dir: &str, commit: &str) -> Result<(), io::Error> {
     Ok(())
 }
 
-fn generate_project(
-    location: PathBuf,
-    extra_context: Value,
-) -> Result<(), Box<dyn std::error::Error>> {
+fn generate_project(location: PathBuf, extra_context: Value) -> Result<(), Box<dyn Error>> {
     println!("generate");
     cookiecutter(location, extra_context)?;
 
