@@ -223,21 +223,9 @@ fn generate_file(
 
     let outfile = project_dir.join(outfile_tmpl);
 
-    match tera.add_raw_template("template", &load_template(file.to_str().unwrap())?) {
-        Ok(_) => (),
-        Err(e) => {
-            println!("{:?}", e);
-            std::process::exit(1);
-        }
-    };
+    tera.add_raw_template("template", &load_template(file.to_str().unwrap())?)?;
 
-    let rendered_file = match tera.render("template", context) {
-        Ok(t) => t,
-        Err(e) => {
-            println!("{:?}", e);
-            std::process::exit(1)
-        }
-    };
+    let rendered_file = tera.render("template", context)?;
 
     println!("renderedfile {:?}", rendered_file);
 
