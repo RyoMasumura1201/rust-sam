@@ -223,7 +223,7 @@ fn generate_file(
 
     let outfile = project_dir.join(outfile_tmpl);
 
-    tera.add_raw_template("template", &load_template(file.to_str().unwrap())?)?;
+    tera.add_raw_template("template", &load_template(file)?)?;
 
     let rendered_file = tera.render("template", context)?;
 
@@ -234,8 +234,8 @@ fn generate_file(
     Ok(())
 }
 
-fn load_template(path: &str) -> io::Result<String> {
-    let mut file = File::open(path)?;
+fn load_template(path: &Path) -> io::Result<String> {
+    let mut file = File::open(path.to_str().unwrap())?;
     let mut content = String::new();
     file.read_to_string(&mut content)?;
 
