@@ -227,8 +227,6 @@ fn generate_file(
 
     let rendered_file = tera.render("template", context)?;
 
-    println!("renderedfile {:?}", rendered_file);
-
     fs::write(outfile, rendered_file)?;
 
     Ok(())
