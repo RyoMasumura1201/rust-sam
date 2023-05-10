@@ -10,7 +10,7 @@ use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
     global_config::create_config_directory_if_not_exists()
-        .expect("configディレクトリ作成に失敗しました");
+        .expect("failed to create config directory");
     let cli = Cli::parse();
 
     match &cli.command {
