@@ -18,6 +18,8 @@ impl fmt::Display for NonTemplatedInputDirError {
     }
 }
 
+impl Error for NonTemplatedInputDirError {}
+
 #[derive(Debug)]
 struct OutputDirExistsError;
 
@@ -27,7 +29,7 @@ impl fmt::Display for OutputDirExistsError {
     }
 }
 
-impl std::error::Error for OutputDirExistsError {}
+impl Error for OutputDirExistsError {}
 
 pub fn cookiecutter(template: PathBuf, extra_context: Value) -> Result<(), Box<dyn Error>> {
     let context_file = template.join("cookiecutter.json");
@@ -150,8 +152,6 @@ fn generate_files(
 
     Ok(())
 }
-
-impl std::error::Error for NonTemplatedInputDirError {}
 
 fn find_template(repo_dir: &PathBuf) -> Result<PathBuf, Box<dyn Error>> {
     let mut project_template: Option<PathBuf> = None;
