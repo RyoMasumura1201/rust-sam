@@ -5,6 +5,7 @@ pub mod config;
 pub mod cookiecutter;
 mod init;
 use crate::config as global_config;
+use dialoguer::{theme::ColorfulTheme, Input};
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -13,19 +14,20 @@ fn main() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
 
     match &cli.command {
-        Some(Commands::Init { name }) => {
-            println!("'myapp init' was used");
-            match name {
-                Some(name) => {
-                    println!("name is {}", name);
-                    init::init(name)?;
-                }
-                None => {
-                    println!("name is not given");
-                    init::init("sam-app")?;
-                }
+        Some(Commands::Init { name }) => match name {
+            Some(name) => {
+                init::init(name)?;
             }
-        }
+            None => {
+                let project_name: String = Input::with_theme(&ColorfulTheme::default())
+                    .with_prompt("Project name")
+                    .default("sam-app".to_string())
+                    .interact_text()
+                    .unwrap();
+
+                init::init(project_name.as_str())?;
+            }
+        },
         None => {}
     }
 
