@@ -28,6 +28,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 init::init(project_name.as_str())?;
             }
         },
+        Some(Commands::Build) => {
+            println!("build");
+        }
         None => {}
     }
 
