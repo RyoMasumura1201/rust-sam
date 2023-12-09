@@ -1,6 +1,7 @@
 use clap::Parser;
 mod cli;
 use cli::{Cli, Commands};
+mod build;
 pub mod config;
 pub mod cookiecutter;
 mod init;
@@ -28,9 +29,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 init::init(project_name.as_str())?;
             }
         },
-        Some(Commands::Build) => {
-            println!("build");
-        }
+        Some(Commands::Build) => build::build(),
         None => {}
     }
 
