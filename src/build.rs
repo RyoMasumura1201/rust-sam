@@ -81,3 +81,8 @@ struct Function {
     // LoggingConfig for Advanced logging
     logging_config: Option<HashMap<String, String>>,
 }
+
+#[derive(Debug)]
+struct ResourcesToBuildCollector {
+    functions: Vec<Function>,
+}
