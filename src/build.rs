@@ -28,6 +28,7 @@ fn get_or_default_template_file_name() -> Result<PathBuf, String> {
 
 fn run(template_file: PathBuf) {}
 
+fn collect_build_resources() -> ResourcesToBuildCollector {}
 #[derive(Debug)]
 struct Function {
     // Function id, can be Logical ID or any function identifier to define a function in specific IaC
