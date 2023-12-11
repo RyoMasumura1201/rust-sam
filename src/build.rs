@@ -2,33 +2,6 @@ use std::collections::HashMap;
 use std::env;
 use std::path::PathBuf;
 
-pub fn build() {
-    match get_or_default_template_file_name() {
-        Ok(path) => {
-            println!("Path to template.yaml: {}", path.display());
-            run(path);
-        }
-        Err(e) => println!("Error: {}", e),
-    }
-}
-
-fn get_or_default_template_file_name() -> Result<PathBuf, String> {
-    match env::current_dir() {
-        Ok(mut path) => {
-            path.push("template.yaml");
-            if path.exists() {
-                Ok(path)
-            } else {
-                Err("template.yaml not found in the current directory.".to_string())
-            }
-        }
-        Err(e) => Err(format!("Failed to get current directory: {}", e)),
-    }
-}
-
-fn run(template_file: PathBuf) {}
-
-fn collect_build_resources() -> ResourcesToBuildCollector {}
 #[derive(Debug)]
 struct Function {
     // Function id, can be Logical ID or any function identifier to define a function in specific IaC
@@ -87,3 +60,43 @@ struct Function {
 struct ResourcesToBuildCollector {
     functions: Vec<Function>,
 }
+
+#[derive(Debug)]
+struct Stack {
+    parent_stack_path: String,
+    name: String,
+    location: String,
+    parameters: Option<HashMap<String, String>>,
+    template_dict: HashMap<String, String>,
+    metadata: Option<HashMap<String, String>>,
+}
+
+pub fn build() {
+    match get_or_default_template_file_name() {
+        Ok(path) => {
+            println!("Path to template.yaml: {}", path.display());
+            run(path);
+        }
+        Err(e) => println!("Error: {}", e),
+    }
+}
+
+fn get_or_default_template_file_name() -> Result<PathBuf, String> {
+    match env::current_dir() {
+        Ok(mut path) => {
+            path.push("template.yaml");
+            if path.exists() {
+                Ok(path)
+            } else {
+                Err("template.yaml not found in the current directory.".to_string())
+            }
+        }
+        Err(e) => Err(format!("Failed to get current directory: {}", e)),
+    }
+}
+
+fn run(template_file: PathBuf) {}
+
+fn collect_build_resources() -> ResourcesToBuildCollector {}
+
+fn get_stacks(template_file: PathBuf) {}
