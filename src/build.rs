@@ -1,6 +1,10 @@
 use std::collections::HashMap;
 use std::env;
 use std::path::PathBuf;
+use serde_yaml;
+use std::fs::File;
+use std::io::Read;
+use std::error::Error;
 
 #[derive(Debug)]
 struct Function {
@@ -71,6 +75,28 @@ struct Stack {
     metadata: Option<HashMap<String, String>>,
 }
 
+#[derive(Debug)]
+struct TemplateNotFoundException;
+
+impl fmt::Display for TemplateNotFoundException {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "No project template found in the specified directory")
+    }
+}
+
+impl Error for TemplateNotFoundException {}
+
+#[derive(Debug)]
+struct TemplateFailedParsingException(String);
+
+impl std::fmt::Display for TemplateFailedParsingException {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl Error for TemplateFailedParsingException {}
+
 pub fn build() {
     match get_or_default_template_file_name() {
         Ok(path) => {
@@ -95,8 +121,30 @@ fn get_or_default_template_file_name() -> Result<PathBuf, String> {
     }
 }
 
-fn run(template_file: PathBuf) {}
+fn run(template_file: PathBuf) {
+    collect_build_resources(template_file)
+}
 
-fn collect_build_resources() -> ResourcesToBuildCollector {}
+fn collect_build_resources(template_file: PathBuf) -> ResourcesToBuildCollector {
+    get_stacks(template_file)
+}
 
-fn get_stacks(template_file: PathBuf) {}
+fn get_stacks(template_file: PathBuf) {
+    let template_data = get_template_data(template_file)
+}
+
+fn get_template_data(template_file: PathBuf) -> Result<serde_yaml::Value, Box<dyn Error>>{
+    if !template_file.exists() {
+        return Err(Box::new(TemplateNotFoundException(format!("Template file not found at {:?}", template_file))))
+    }
+
+    let mut file = File::open(&template_file)?;
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)?;
+
+    serde_yaml::from_str::<serde_yaml::Value>(&contents).map_err(|ex| {
+        Box::new(TemplateFailedParsingException(
+            format!("Failed to parse template: {}", ex),
+        )) as Box<dyn Error>
+    })
+}
