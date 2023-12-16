@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 use std::env;
-use std::path::PathBuf;
-use serde_yaml;
+use std::error::Error;
+use std::fmt;
 use std::fs::File;
 use std::io::Read;
-use std::error::Error;
+use std::path::PathBuf;
 
 #[derive(Debug)]
 struct Function {
@@ -80,7 +80,7 @@ struct TemplateNotFoundException;
 
 impl fmt::Display for TemplateNotFoundException {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "No project template found in the specified directory")
+        write!(f, "No project template found in the specified directory",)
     }
 }
 
@@ -130,12 +130,15 @@ fn collect_build_resources(template_file: PathBuf) -> ResourcesToBuildCollector 
 }
 
 fn get_stacks(template_file: PathBuf) {
-    let template_data = get_template_data(template_file)
+    let template_data = get_template_data(template_file);
 }
 
-fn get_template_data(template_file: PathBuf) -> Result<serde_yaml::Value, Box<dyn Error>>{
+fn get_template_data(template_file: PathBuf) -> Result<serde_yaml::Value, Box<dyn Error>> {
     if !template_file.exists() {
-        return Err(Box::new(TemplateNotFoundException(format!("Template file not found at {:?}", template_file))))
+        return Err(Box::new(TemplateNotFoundException(format!(
+            "Template file not found at {:?}",
+            template_file
+        ))));
     }
 
     let mut file = File::open(&template_file)?;
@@ -143,8 +146,9 @@ fn get_template_data(template_file: PathBuf) -> Result<serde_yaml::Value, Box<dy
     file.read_to_string(&mut contents)?;
 
     serde_yaml::from_str::<serde_yaml::Value>(&contents).map_err(|ex| {
-        Box::new(TemplateFailedParsingException(
-            format!("Failed to parse template: {}", ex),
-        )) as Box<dyn Error>
+        Box::new(TemplateFailedParsingException(format!(
+            "Failed to parse template: {}",
+            ex
+        ))) as Box<dyn Error>
     })
 }
