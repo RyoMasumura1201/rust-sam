@@ -122,23 +122,65 @@ fn get_or_default_template_file_name() -> Result<PathBuf, String> {
 }
 
 fn run(template_file: PathBuf) {
-    collect_build_resources(template_file)
+    collect_build_resources(template_file);
 }
 
 fn collect_build_resources(template_file: PathBuf) -> ResourcesToBuildCollector {
-    get_stacks(template_file)
+    let stacks = get_stacks(template_file);
+
+    let function = Function {
+        function_id: "func123".to_string(),
+        name: "MyFunction".to_string(),
+        functionname: "CustomName".to_string(),
+        runtime: Some("nodejs12.x".to_string()),
+        memory: Some(128),
+        timeout: Some(30),
+        handler: Some("index.handler".to_string()),
+        imageuri: None,
+        packagetype: "Zip".to_string(),
+        imageconfig: None,
+        codeuri: Some("s3://bucket/key".to_string()),
+        environment: None,
+        rolearn: Some("arn:aws:iam::123456789012:role/lambda-role".to_string()),
+        metadata: None,
+        inlinecode: None,
+        codesign_config_arn: None,
+        architectures: None,
+        function_url_config: None,
+        stack_path: "root/".to_string(),
+        runtime_management_config: None,
+        logging_config: None,
+    };
+
+    let mut vec = Vec::new();
+    vec.push(function);
+    ResourcesToBuildCollector { functions: vec }
 }
 
-fn get_stacks(template_file: PathBuf) {
+fn get_stacks(template_file: PathBuf) -> Vec<Stack> {
     let template_data = get_template_data(template_file);
+    let parent_stack_path = "parent/path".to_string();
+    let name = "stack_name".to_string();
+    let location = "location/path".to_string();
+    let parameters = Some(HashMap::new());
+    let template_dict = HashMap::new();
+    let metadata = Some(HashMap::new());
+    let stack = Stack {
+        parent_stack_path,
+        name,
+        location,
+        parameters,
+        template_dict,
+        metadata,
+    };
+    let mut vec = Vec::new();
+    vec.push(stack);
+    vec
 }
 
 fn get_template_data(template_file: PathBuf) -> Result<serde_yaml::Value, Box<dyn Error>> {
     if !template_file.exists() {
-        return Err(Box::new(TemplateNotFoundException(format!(
-            "Template file not found at {:?}",
-            template_file
-        ))));
+        return Err(Box::new(TemplateNotFoundException));
     }
 
     let mut file = File::open(&template_file)?;
