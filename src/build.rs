@@ -76,11 +76,11 @@ struct Stack {
 }
 
 #[derive(Debug)]
-struct TemplateNotFoundException;
+struct TemplateNotFoundException(String);
 
 impl fmt::Display for TemplateNotFoundException {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "No project template found in the specified directory",)
+        write!(f, "{}", self.0)
     }
 }
 
@@ -180,7 +180,10 @@ fn get_stacks(template_file: PathBuf) -> Vec<Stack> {
 
 fn get_template_data(template_file: PathBuf) -> Result<serde_yaml::Value, Box<dyn Error>> {
     if !template_file.exists() {
-        return Err(Box::new(TemplateNotFoundException));
+        return Err(Box::new(TemplateNotFoundException(format!(
+            "Template file not found at {}",
+            template_file.display()
+        ))));
     }
 
     let mut file = File::open(&template_file)?;
@@ -193,4 +196,29 @@ fn get_template_data(template_file: PathBuf) -> Result<serde_yaml::Value, Box<dy
             ex
         ))) as Box<dyn Error>
     })
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_must_raise_if_file_does_not_exist() {
+        let filepath = PathBuf::from("filename");
+
+        match get_template_data(filepath.clone()) {
+            Ok(_) => panic!("Expected an error, but got Ok"),
+            Err(e) => {
+                assert!(
+                    e.is::<TemplateNotFoundException>(),
+                    "Error should be of type TemplateNotFoundException"
+                );
+                assert_eq!(
+                    format!("Template file not found at {}", filepath.display()),
+                    e.to_string()
+                );
+            }
+        }
+    }
 }
