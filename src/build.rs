@@ -152,8 +152,7 @@ fn collect_build_resources(template_file: PathBuf) -> ResourcesToBuildCollector 
         logging_config: None,
     };
 
-    let mut vec = Vec::new();
-    vec.push(function);
+    let vec = vec![function];
     ResourcesToBuildCollector { functions: vec }
 }
 
@@ -173,8 +172,7 @@ fn get_stacks(template_file: PathBuf) -> Vec<Stack> {
         template_dict,
         metadata,
     };
-    let mut vec = Vec::new();
-    vec.push(stack);
+    let vec = vec![stack];
     vec
 }
 
